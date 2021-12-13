@@ -9,17 +9,14 @@ from bs4 import BeautifulSoup as bs
 # uloz do csv - headers
 #
 def main():
+    # registered, envelopes, valid values -> dict
     format_respond_city = get_html_city()
     table_results_city = data_table(format_respond_city)
     votes_data = get_votes_data(table_results_city)
-
+    # code, location values -> dict
     format_respond_district = get_html_district()
     table_results_district = data_table(format_respond_district)
     location_data = get_location_data(table_results_district)
-    print(location_data)
-
-
-
 
 
 def get_html_district():
@@ -42,8 +39,8 @@ def data_table(respond):  # tabulka kde jsou uložená data voliči v seznamu, v
 
 def get_votes_data(table):  # potřebuju přidat obec, kód obce asi od jinud, volené strany
     registered = table.find("td",
-                           {"class": "cislo", "data-rel": "L1", "headers": "sa2"}
-                           ).text
+                            {"class": "cislo", "data-rel": "L1", "headers": "sa2"}
+                            ).text
     envelopes = table.find("td",
                            {"class": "cislo", "data-rel": "L1", "headers": "sa3"}
                            ).text
@@ -56,11 +53,11 @@ def get_votes_data(table):  # potřebuju přidat obec, kód obce asi od jinud, v
 
 def get_location_data(table):
     code = table.find("td",
-                        {"class": "cislo", "headers": "t1sa1 t1sb1"}
-                        ).text
+                      {"class": "cislo", "headers": "t1sa1 t1sb1"}
+                      ).text
     location = table.find("td",
                           {"class": "overflow_name", "headers": "t1sa1 t1sb2"}
-                        ).text
+                          ).text
 
     return {"code": code, "location": location}
 
