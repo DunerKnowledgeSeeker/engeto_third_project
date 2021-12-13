@@ -9,10 +9,24 @@ from bs4 import BeautifulSoup as bs
 # uloz do csv - headers
 #
 def main():
-    format_respond = get_html_city()
-    table_results = vote_city_data_table(format_respond)
-    test = get_votes_data(table_results)
-    print(test)
+    format_respond_city = get_html_city()
+    table_results_city = data_table(format_respond_city)
+    votes_data = get_votes_data(table_results_city)
+
+    format_respond_district = get_html_district()
+    table_results_district = data_table(format_respond_district)
+    location_data = get_location_data(table_results_district)
+    print(location_data)
+
+
+
+
+
+def get_html_district():
+    url = "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2103"
+    r = requests.get(url)
+    format_r = bs(r.text, "html.parser")
+    return format_r
 
 
 def get_html_city():  # udělat loop pro každou obec
@@ -22,12 +36,12 @@ def get_html_city():  # udělat loop pro každou obec
     return format_r
 
 
-def vote_city_data_table(respond):  # tabulka kde jsou uložená data voliči v seznamu, vydané obálky, platné hlasy
+def data_table(respond):  # tabulka kde jsou uložená data voliči v seznamu, vydané obálky, platné hlasy
     return respond.find("table", {"class": "table"})
 
 
 def get_votes_data(table):  # potřebuju přidat obec, kód obce asi od jinud, volené strany
-    registred = table.find("td",
+    registered = table.find("td",
                            {"class": "cislo", "data-rel": "L1", "headers": "sa2"}
                            ).text
     envelopes = table.find("td",
@@ -37,9 +51,18 @@ def get_votes_data(table):  # potřebuju přidat obec, kód obce asi od jinud, v
                        {"class": "cislo", "data-rel": "L1", "headers": "sa6"}
                        ).text
 
-    return {"registred": registred, "envelopes": envelopes, "valid": valid}
+    return {"registered": registered, "envelopes": envelopes, "valid": valid}
 
 
+def get_location_data(table):
+    code = table.find("td",
+                        {"class": "cislo", "headers": "t1sa1 t1sb1"}
+                        ).text
+    location = table.find("td",
+                          {"class": "overflow_name", "headers": "t1sa1 t1sb2"}
+                        ).text
+
+    return {"code": code, "location": location}
 
 
 if __name__ == "__main__":
