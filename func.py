@@ -13,7 +13,6 @@ def main():
     location_codes_list = get_location_code(url)
 
 
-
 def get_cities_url(district_url):
     # connection
     try:
@@ -65,22 +64,16 @@ def get_vote_data(city_url):
     envelopes = soup.find("td", {"class": "cislo", "headers": "sa3", "data-rel": "L1"})
     valid = soup.find("td", {"class": "cislo", "headers": "sa6", "data-rel": "L1"})
 
-    # get political parties -> dict - key = name, value = number of votes
-    parties_names = []
-    parties_votes = []
-    for name in soup.find_all("td", {"class": "overflow_name", "headers": "t2sa1 t2sb2"}):
-        parties_names.append(name.text)
-    for vote in soup.find_all("td", {"class": "cislo", "headers": "t2sa2 t2sb3"}):
-        parties_votes.append(vote.text)
-    print(parties_votes)
-    print(parties_names)
+    # get political parties and votes -> dict - key = name of political party, value = number of votes
+    parties_names = [name.text for name in soup.find_all("td", {"class": "overflow_name"})]
+    number_votes_table_1 = [vote.text for vote in soup.find_all("td", {"class": "cislo", "headers": "t1sa2 t1sb3"})]
+    number_votes_table_2 = [vote.text for vote in soup.find_all("td", {"class": "cislo", "headers": "t2sa2 t2sb3"})]
+    number_votes = number_votes_table_1 + number_votes_table_2
+    politic_parties_results = zip(parties_names, number_votes)
+
+    return location_name, registered.text, envelopes.text, valid.text, dict(politic_parties_results)
 
 
-    return location_name, registered.text, envelopes.text, valid.text
-get_vote_data(test_url)
-
-
-# get political parties = HEADERS
 # create generator with get_vote_data func - arguments = list(url)
 # add location code to csv = extra function
 # from func get_code_data and get_vote_data = create csv
