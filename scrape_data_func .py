@@ -1,16 +1,8 @@
 import requests
 from bs4 import BeautifulSoup as bs
-from pprint import pprint
-
-# maybe import sys for sys.argv - according to tak
 
 url = 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2103'  # district URL
 test_url= "https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=2&xobec=532908&xvyber=2103"
-
-
-def main():
-    cities_links = get_cities_url(url)
-    location_codes_list = get_location_code(url)
 
 
 def get_cities_url(district_url):
@@ -40,16 +32,14 @@ def get_location_code(district_url):
     except requests.exceptions.HTTPError as err:
         raise exit(err)
     soup = bs(r.text, "html.parser")
-    codes = []
-    for code in soup.find_all("td", {"class": "cislo"}):
-        codes.append(code.text)
+    codes = [code.text for code in soup.find_all("td", {"class": "cislo"})]
 
     return codes
 
 
 def get_vote_data(city_url):
     """
-    Scrap needed data from city_url to get results of elections
+    Scrape needed data from city_url to get results of elections
     city name, registered voters, submitted, envelopes, verified votes
     dictionary with contains key = name of the city, value = number of votes
     """
@@ -84,5 +74,3 @@ def get_vote_data(city_url):
 # from func get_code_data and get_vote_data = create csv
 # save to csv
 
-if __name__ == '__main__':
-    main()
