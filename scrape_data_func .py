@@ -80,4 +80,4 @@ def get_data_all_url():
 
 # test generator - probably through csv func
 # save to csv
-# test if contribution works
+# test if contribution works - it works
