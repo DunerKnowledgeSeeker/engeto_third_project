@@ -1,8 +1,10 @@
 import requests
+import time
 from bs4 import BeautifulSoup as bs
 
-url = 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2103'  # district URL
-test_url= "https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=2&xobec=532908&xvyber=2103"
+url = 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2103'
+test_url = "https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=2&xobec=532908&xvyber=2103"
+
 
 
 def get_cities_url(district_url):
@@ -20,27 +22,29 @@ def get_cities_url(district_url):
             links.append('https://volby.cz/pls/ps2017nss/' + a['href'])
         else:
             continue
-    format_links = set(links)
+    format_links = list(dict.fromkeys(links))
 
-    return list(format_links)
+    return format_links
 
 
 def get_location_code(district_url):
-    """Create a list that contains city codes - the codes are only on the page of district"""
+    """Create a dictionary that contains cities codes as keys and cities names as values"""
     try:
         r = requests.get(district_url)
     except requests.exceptions.HTTPError as err:
         raise exit(err)
     soup = bs(r.text, "html.parser")
     codes = [code.text for code in soup.find_all("td", {"class": "cislo"})]
+    locations = [location.text for location in soup.find_all("td", {"class": "overflow_name"})]
+    sorted_codes_locations = zip(codes, locations)
 
-    return codes
+    return dict(sorted_codes_locations)
 
 
 def get_vote_data(city_url):
     """
     Scrape needed data from city_url to get results of elections
-    city name, registered voters, submitted, envelopes, verified votes
+    registered voters, submitted, envelopes, verified votes
     dictionary with contains key = name of the city, value = number of votes
     """
     try:
@@ -48,11 +52,6 @@ def get_vote_data(city_url):
     except requests.exceptions.HTTPError as err:
         raise exit(err)
     soup = bs(r.text, "html.parser")
-
-    # get location
-    location = soup.find_all({"h3"})[2]
-    format_name = location.text.split(":")
-    location_name = format_name[1].strip(" \n")
 
     # get registered, envelopes, valid
     registered = soup.find("td", {"class": "cislo", "headers": "sa2", "data-rel": "L1"})
@@ -66,11 +65,18 @@ def get_vote_data(city_url):
     number_votes = number_votes_table_1 + number_votes_table_2
     politic_parties_results = zip(parties_names, number_votes)
 
-    return location_name, registered.text, envelopes.text, valid.text, dict(politic_parties_results)
+    return {"REGISTERED": registered.text}, {"ENVELOPES": envelopes.text}, {"VALID": valid.text}, dict(
+        politic_parties_results)
 
 
-# create generator with get_vote_data func - arguments = list(url)
-# add location code to csv = extra function
-# from func get_code_data and get_vote_data = create csv
+def get_data_all_url():
+    all_url = get_cities_url(url)
+    for i in all_url:
+        registered, envelopes, valid, political_parties = get_vote_data(i)
+
+    yield registered, envelopes, valid, political_parties
+
+
+
+# test generator - probably through csv func
 # save to csv
-
