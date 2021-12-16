@@ -1,10 +1,5 @@
 import requests
-import time
 from bs4 import BeautifulSoup as bs
-
-url = 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2103'
-test_url = "https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=2&xobec=532908&xvyber=2103"
-
 
 
 def get_cities_url(district_url):
@@ -69,15 +64,8 @@ def get_vote_data(city_url):
         politic_parties_results)
 
 
-def get_data_all_url():
-    all_url = get_cities_url(url)
-    for i in all_url:
-        registered, envelopes, valid, political_parties = get_vote_data(i)
-
-    yield registered, envelopes, valid, political_parties
-
-
-
-# test generator - probably through csv func
-# save to csv
-# test if contribution works - it works
+def get_data_all_url(district_url):
+    all_url = get_cities_url(district_url)
+    for data in all_url:
+        registered, envelopes, valid, political_parties = get_vote_data(data)
+        yield registered, envelopes, valid, political_parties
